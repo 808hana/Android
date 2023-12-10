@@ -1,8 +1,5 @@
 package com.example.testapplication.data
 
-//import kotlinx.serialization.Serializable
-
-//@Serializable
 data class KittenImage(
     val id: Int,
     val url: String,
