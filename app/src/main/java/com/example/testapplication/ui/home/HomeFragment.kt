@@ -1,20 +1,14 @@
 package com.example.testapplication.ui.home
 
 import android.os.Bundle
-import android.util.Log
-import android.widget.ListView
-import android.widget.Toast
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
+import com.example.testapplication.data.ImageHit
+import com.example.testapplication.data.PixabayResponse
+import com.example.testapplication.api.api_interface
 import com.example.testapplication.databinding.FragmentHomeBinding
-import com.example.testapplication.R
-import com.example.testapplication.data.KittenImage
-import com.example.testapplication.data.ListItem
-import com.example.testapplication.data.api_interface
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -26,80 +20,82 @@ class HomeFragment : Fragment() {
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
 
-    private var kittenImages: MutableList<KittenImage> = mutableListOf()
+    private val imageHits: MutableList<ImageHit> = mutableListOf()
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val homeViewModel =
-            ViewModelProvider(this).get(HomeViewModel::class.java)
 
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        val listView: ListView = binding.listViewHome
-
-        /*val items = listOf(
-            ListItem(R.drawable.cat_1, "Item 1"),
-            ListItem(R.drawable.cat_2, "Item 2"),
-        )
-
-        val adapter = MyListAdapter(requireContext(), items)
-        listView.adapter = adapter
-
-        //val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, items)
-        //listView.adapter = adapter
-
-        //Handle list item clicks
-        listView.setOnItemClickListener { _, _, position, _ ->
-            val selectedItem = items[position]
-            Toast.makeText(requireContext(), "Selected: $selectedItem", Toast.LENGTH_SHORT).show()
-        }*/
-
-        // Initialize Retrofit and fetch data
         initRetrofitAndFetchData()
         return root
     }
 
     private fun initRetrofitAndFetchData() {
         val retrofit = Retrofit.Builder()
-            .baseUrl("https://mlemapi.p.rapidapi.com")
+            .baseUrl("https://pixabay.com/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
 
         val apiService = retrofit.create(api_interface::class.java)
 
-        apiService.getKittenImages().enqueue(object : Callback<KittenImage> {
-            override fun onResponse(
-                call: Call<KittenImage>,
-                response: Response<KittenImage>
-            ) {
+        val call = apiService.searchImages("41183002-bf3427640d13d18680465e50d", "yellow+flowers", "photo")
+        call.enqueue(object : Callback<PixabayResponse> {
+            override fun onResponse(call: Call<PixabayResponse>, response: Response<PixabayResponse>) {
                 if (response.isSuccessful) {
-                    Log.d("API Success", "Response: ${response.body()}")
                     updateListView(response.body())
                 }
                 else{
-                    Log.e("API Error", "Response Code: ${response.code()}")
+                    /*val defaultImage = ImageHit(
+                        id = -1,  // -1 or another distinctive value to indicate a default image
+                        imageURL = "https://img.freepik.com/free-photo/gray-kitty-with-monochrome-wall-her_23-2148955126.jpg?t=st=1702217947~exp=1702218547~hmac=873d4b8be07bcf3883fb36dc6b2cbfd50099b5f5925a1fe90d23ff29d03c92bd",  // Replace with your default image URL
+                        type = "photo"
+                    )
+                    imageHits.clear()
+                    imageHits.add(defaultImage)
+                    updateListViewWithDefaultImage()*/
                 }
             }
 
-            override fun onFailure(call: Call<KittenImage>, t: Throwable) {
-                Log.e("API Failure", "Error: ${t.message}")
+            override fun onFailure(call: Call<PixabayResponse>, t: Throwable) {
+                // Handle failure
             }
-
         })
     }
 
-    private fun updateListView(newKittenImage: KittenImage?) {
-        newKittenImage?.let {
-            // Add the new image to the list
-            kittenImages.add(it)
+    private fun updateListView(newPixabayResponse: PixabayResponse?) {
+        newPixabayResponse?.hits?.let { newHits ->
+            // Assuming 'imageHits' is a mutable list of ImageHit objects that your adapter uses
+            imageHits.addAll(newHits)
 
-            // Update the list view with the new list
-            val adapter = MyListAdapter(requireContext(), kittenImages)
+            // Update the adapter with the new list
+            if (binding.listViewHome.adapter == null) {
+                // If the adapter hasn't been initialized yet, create and set a new adapter
+                val adapter = MyListAdapter(requireContext(), imageHits)
+                binding.listViewHome.adapter = adapter
+            } else {
+                // If the adapter is already initialized, refresh the adapter's data
+                (binding.listViewHome.adapter as? MyListAdapter)?.apply {
+                    notifyDataSetChanged()
+                }
+            }
+        }
+    }
+
+    private fun updateListViewWithDefaultImage() {
+        // Update the adapter with the new list
+        if (binding.listViewHome.adapter == null) {
+            // If the adapter hasn't been initialized yet, create and set a new adapter
+            val adapter = MyListAdapter(requireContext(), imageHits)
             binding.listViewHome.adapter = adapter
-            adapter.notifyDataSetChanged() // Notify the adapter about the data change
+        } else {
+            // If the adapter is already initialized, refresh the adapter's data
+            (binding.listViewHome.adapter as? MyListAdapter)?.apply {
+                notifyDataSetChanged()
+            }
         }
     }
 
