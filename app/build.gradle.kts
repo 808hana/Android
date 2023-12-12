@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.testapplication"
-        minSdk = 27
+        minSdk = 28
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -60,6 +60,7 @@ dependencies {
 
     implementation ("com.github.bumptech.glide:glide:4.12.0")
     implementation("androidx.compose.foundation:foundation-android:1.5.4")
+    implementation("com.android.car.ui:car-ui-lib:2.5.1")
     annotationProcessor ("com.github.bumptech.glide:compiler:4.12.0")
 
     testImplementation("junit:junit:4.13.2")
