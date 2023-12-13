@@ -1,15 +1,15 @@
 package com.example.testapplication
 
+import android.app.ActionBar
 import android.os.Bundle
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
-import com.example.testapplication.data.AndroidDownloader
 import com.example.testapplication.databinding.ActivityMainBinding
+import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {
 
@@ -18,10 +18,11 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
 
-/*      val downloader = AndroidDownloader(this)
-        downloader.downloadFile("https://img.freepik.com/free-photo/gray-kitty-with-monochrome-wall-her_23-2148955126.jpg?t=st=1702217947~exp=1702218547~hmac=873d4b8be07bcf3883fb36dc6b2cbfd50099b5f5925a1fe90d23ff29d03c92bd")
-*/
         super.onCreate(savedInstanceState)
+
+        val actionBar: androidx.appcompat.app.ActionBar? = supportActionBar
+        actionBar?.hide()
+
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -35,6 +36,6 @@ class MainActivity : AppCompatActivity() {
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
-    }
 
+    }
 }

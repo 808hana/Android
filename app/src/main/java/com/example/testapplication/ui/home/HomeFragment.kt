@@ -6,6 +6,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.SearchView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModel
 import com.example.testapplication.data.ImageHit
 import com.example.testapplication.data.PixabayResponse
 import com.example.testapplication.api.api_interface
@@ -22,10 +25,10 @@ class HomeFragment : Fragment() {
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
 
-    private val imageHits: MutableList<ImageHit> = mutableListOf()
     private lateinit var adapter: MyListAdapter
     private lateinit var downloader: AndroidDownloader
 
+    private val viewModel by viewModels<HomeViewModel>()
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -37,18 +40,25 @@ class HomeFragment : Fragment() {
 
         downloader = AndroidDownloader(requireContext())
         setupListView()
-        initRetrofitAndFetchData("cat")
+
+        viewModel.searchImages("cat")
         return root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        viewModel.images.observe(viewLifecycleOwner, Observer { newImageHits ->
+            // Update the adapter with the new data
+            (binding.listViewHome.adapter as? MyListAdapter)?.updateData(newImageHits.toMutableList())
+        })
+
         binding.ImageSearchBar.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 query?.let {
                     if (it.isNotEmpty()) {
-                        performSearch(it)
+                        //performSearch(it)
+                        viewModel.searchImages(it)
                     }
                 }
                 return true
@@ -60,56 +70,15 @@ class HomeFragment : Fragment() {
         })
     }
 
-    private fun performSearch(query: String) {
-        val formattedQuery = query.replace(" ", "+")
-        initRetrofitAndFetchData(formattedQuery)
-    }
-
     private fun setupListView() {
-        adapter = MyListAdapter(requireContext(), imageHits, downloader)
+        adapter = MyListAdapter(requireContext(), mutableListOf(), downloader)
         binding.listViewHome.adapter = adapter
     }
-    private fun initRetrofitAndFetchData(searchQuery: String) {
-        imageHits.clear()
 
-        val retrofit = Retrofit.Builder()
-            .baseUrl("https://pixabay.com/")
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-
-        val apiService = retrofit.create(api_interface::class.java)
-        //val call = apiService.searchImages("41183002-bf3427640d13d18680465e50d", "yellow+flowers", "photo")
-        val call = apiService.searchImages("41183002-bf3427640d13d18680465e50d", searchQuery, "photo")
-
-        call.enqueue(object : Callback<PixabayResponse> {
-            override fun onResponse(call: Call<PixabayResponse>, response: Response<PixabayResponse>) {
-                if (response.isSuccessful) {
-                    updateListView(response.body())
-                } else {
-                }
-            }
-
-            override fun onFailure(call: Call<PixabayResponse>, t: Throwable) {
-                // Handle failure, e.g., show an error message
-            }
-        })
+    private fun updateListView(imageHits: List<ImageHit>) {
+        // Update the adapter with new data
+        adapter.updateData(imageHits)
     }
-
-
-    private fun updateListView(newPixabayResponse: PixabayResponse?) {
-        newPixabayResponse?.hits?.let { newHits ->
-            imageHits.addAll(newHits)
-            if (binding.listViewHome.adapter == null) {
-                val adapter = MyListAdapter(requireContext(), imageHits, downloader)
-                binding.listViewHome.adapter = adapter
-            } else {
-                (binding.listViewHome.adapter as? MyListAdapter)?.apply {
-                    notifyDataSetChanged()
-                }
-            }
-        }
-    }
-
 
     override fun onDestroyView() {
         super.onDestroyView()

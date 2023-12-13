@@ -17,7 +17,7 @@ import com.example.testapplication.data.AndroidDownloader
 import com.example.testapplication.data.ImageHit
 
 
-class MyListAdapter(private val context: Context, private val items: List<ImageHit>, private val downloader: AndroidDownloader) : ArrayAdapter<ImageHit>(context, 0, items) {
+class MyListAdapter(private val context: Context, private val items: MutableList<ImageHit>, private val downloader: AndroidDownloader) : ArrayAdapter<ImageHit>(context, 0, items) {
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         val inflater = LayoutInflater.from(context)
@@ -29,13 +29,18 @@ class MyListAdapter(private val context: Context, private val items: List<ImageH
         val textViewBrightness = view.findViewById<TextView>(R.id.textView2)
         val btnDownload = view.findViewById<ImageButton>(R.id.downloadBtn)
 
-        val test_image = "https://img.freepik.com/free-photo/gray-kitty-with-monochrome-wall-her_23-2148955126.jpg?t=st=1702217947~exp=1702218547~hmac=873d4b8be07bcf3883fb36dc6b2cbfd50099b5f5925a1fe90d23ff29d03c92bd"
-        Glide.with(context).load(item.webformatURL).error(R.drawable.ic_notifications_black_24dp).into(imageView)
+        Glide.with(context).load(item.webformatURL).error(R.drawable.error).into(imageView)
         textView.text = "Tags: ${item.tags}"
         textViewBrightness.text = "${item.likes}"
         btnDownload.setOnClickListener {
             downloader.downloadFile(item.webformatURL)
         }
         return view
+    }
+
+    fun updateData(newItems: List<ImageHit>) {
+        clear()
+        addAll(newItems)
+        notifyDataSetChanged()
     }
 }

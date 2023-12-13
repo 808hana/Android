@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr name="buttonColor" format="color"/>
+    <attr name="buttonColorDark" format="color"/>
+    <attr name="SearchBarStyle" format="color"/>
+    <attr name="SearchBarStyleDark" format="color"/>
+</resources>
