@@ -11,4 +11,5 @@
     <color name="likes">#FFFC5B89</color>
     <color name="selectedColor">#FF03DAC5</color>
     <color name="unselectedColor">#FF018786</color>
+    <color name="red">#FFFF0000</color>
 </resources>
