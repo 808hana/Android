@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.SearchView
 import androidx.fragment.app.Fragment
 import com.example.testapplication.data.ImageHit
 import com.example.testapplication.data.PixabayResponse
@@ -36,22 +37,49 @@ class HomeFragment : Fragment() {
 
         downloader = AndroidDownloader(requireContext())
         setupListView()
-        initRetrofitAndFetchData()
+        initRetrofitAndFetchData("cat")
         return root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        binding.ImageSearchBar.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                query?.let {
+                    if (it.isNotEmpty()) {
+                        performSearch(it)
+                    }
+                }
+                return true
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                return true
+            }
+        })
+    }
+
+    private fun performSearch(query: String) {
+        val formattedQuery = query.replace(" ", "+")
+        initRetrofitAndFetchData(formattedQuery)
     }
 
     private fun setupListView() {
         adapter = MyListAdapter(requireContext(), imageHits, downloader)
         binding.listViewHome.adapter = adapter
     }
-    private fun initRetrofitAndFetchData() {
+    private fun initRetrofitAndFetchData(searchQuery: String) {
+        imageHits.clear()
+
         val retrofit = Retrofit.Builder()
             .baseUrl("https://pixabay.com/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
 
         val apiService = retrofit.create(api_interface::class.java)
-        val call = apiService.searchImages("41183002-bf3427640d13d18680465e50d", "yellow+flowers", "photo")
+        //val call = apiService.searchImages("41183002-bf3427640d13d18680465e50d", "yellow+flowers", "photo")
+        val call = apiService.searchImages("41183002-bf3427640d13d18680465e50d", searchQuery, "photo")
 
         call.enqueue(object : Callback<PixabayResponse> {
             override fun onResponse(call: Call<PixabayResponse>, response: Response<PixabayResponse>) {
@@ -79,9 +107,6 @@ class HomeFragment : Fragment() {
                     notifyDataSetChanged()
                 }
             }
-            /*imageHits.clear()
-            imageHits.addAll(newHits)
-            adapter.notifyDataSetChanged()*/
         }
     }
 
