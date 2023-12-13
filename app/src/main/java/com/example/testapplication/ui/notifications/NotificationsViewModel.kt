@@ -3,11 +3,11 @@ package com.example.testapplication.ui.notifications
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import okhttp3.internal.notify
 
 class NotificationsViewModel : ViewModel() {
 
-    private val _text = MutableLiveData<String>().apply {
-        value = "This is notifications Fragment"
+    fun checkForUpdates() {
+        //_text.value = "Checking for updates..."
     }
-    val text: LiveData<String> = _text
 }
