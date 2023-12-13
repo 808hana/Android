@@ -8,4 +8,5 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="search_bar">#CDF9E8</color>
+    <color name="likes">#FC5B89</color>
 </resources>

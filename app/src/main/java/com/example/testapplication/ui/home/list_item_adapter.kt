@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.AdapterView.OnItemClickListener
 import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import com.bumptech.glide.Glide
@@ -26,12 +27,12 @@ class MyListAdapter(private val context: Context, private val items: List<ImageH
         val imageView = view.findViewById<ImageView>(R.id.imageView)
         val textView = view.findViewById<TextView>(R.id.textView)
         val textViewBrightness = view.findViewById<TextView>(R.id.textView2)
-        val btnDownload = view.findViewById<Button>(R.id.downloadBtn)
+        val btnDownload = view.findViewById<ImageButton>(R.id.downloadBtn)
 
         val test_image = "https://img.freepik.com/free-photo/gray-kitty-with-monochrome-wall-her_23-2148955126.jpg?t=st=1702217947~exp=1702218547~hmac=873d4b8be07bcf3883fb36dc6b2cbfd50099b5f5925a1fe90d23ff29d03c92bd"
         Glide.with(context).load(item.webformatURL).error(R.drawable.ic_notifications_black_24dp).into(imageView)
         textView.text = "Tags: ${item.tags}"
-        textViewBrightness.text = "Likes:  ${item.webformatURL}"
+        textViewBrightness.text = "${item.likes}"
         btnDownload.setOnClickListener {
             downloader.downloadFile(item.webformatURL)
         }

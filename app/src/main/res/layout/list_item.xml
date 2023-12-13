@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:padding="8dp">
 
@@ -22,9 +23,12 @@
             android:id="@+id/textView"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_weight="2"
             android:layout_gravity="center_vertical"
-            android:text="Item Id" />
+            android:text="Tags"
+            android:layout_marginLeft="10dp"
+            android:textStyle="bold"
+            android:textSize="16dp"/>
 
         <TextView
             android:id="@+id/textView2"
@@ -32,13 +36,21 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:layout_weight="1"
-            android:text="Item Brightness" />
-        <Button
+            android:drawableStart="@drawable/heart"
+            android:gravity="center_vertical"
+            android:textStyle="bold"
+            android:textSize="16dp"
+            android:textColor="@color/likes"/>
+
+        <ImageButton
             android:id="@+id/downloadBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Download"
+            android:src="@drawable/download_svgrepo_com"
+            android:background="@color/white"
+            android:layout_marginRight="10dp"
             />
+
     </LinearLayout>
 
 </LinearLayout>
