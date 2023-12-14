@@ -28,20 +28,20 @@ import kotlinx.coroutines.withContext
 
 class MyListAdapter(private val context: Context, private val items: MutableList<ImageHit>, private val downloader: AndroidDownloader, private val dbHelper: SQLiteManager) : ArrayAdapter<ImageHit>(context, 0, items) {
 
-    private var favoriteStatusMap = mutableMapOf<String, Boolean>()
+    private var favoriteStatusMap = mutableMapOf<Int, Boolean>()
     init {
         fetchFavoriteStatuses()
     }
 
     private fun fetchFavoriteStatuses() {
         val db = dbHelper.readableDatabase
-        val cursor = db.query("favorites", arrayOf("ImageUrl"), "Favorite = ?", arrayOf("1"), null, null, null)
+        val cursor = db.query("favorites", arrayOf("ImageId"), "Favorite = ?", arrayOf("1"), null, null, null)
 
-        val favoritesSet = HashSet<String>()
+        val favoritesSet = HashSet<Int>()
         if (cursor.moveToFirst()) {
             do {
-                val imageUrl = cursor.getString(cursor.getColumnIndexOrThrow("ImageUrl"))
-                favoritesSet.add(imageUrl)
+                val id = cursor.getInt(cursor.getColumnIndexOrThrow("ImageId"))
+                favoritesSet.add(id)
             } while (cursor.moveToNext())
             cursor.close()
         }
@@ -49,7 +49,7 @@ class MyListAdapter(private val context: Context, private val items: MutableList
 
         favoriteStatusMap.clear()
         items.forEach { imageHit ->
-            favoriteStatusMap[imageHit.webformatURL] = favoritesSet.contains(imageHit.webformatURL)
+            favoriteStatusMap[imageHit.id] = favoritesSet.contains(imageHit.id)
         }
     }
 
@@ -64,8 +64,8 @@ class MyListAdapter(private val context: Context, private val items: MutableList
         }
     }
 
-    private fun isFavorite(imageUrl: String): Boolean {
-        return favoriteStatusMap[imageUrl] ?: false
+    private fun isFavorite(ImageId: Int): Boolean {
+        return favoriteStatusMap[ImageId] ?: false
     }
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
@@ -81,7 +81,7 @@ class MyListAdapter(private val context: Context, private val items: MutableList
         Glide.with(context).load(item.webformatURL).error(R.drawable.error).into(imageView)
         textView.text = "Tags: ${item.tags}"
 
-        if(isFavorite(item.webformatURL)){
+        if(isFavorite(item.id)){
             btnFavorite.setImageResource(R.drawable.heart_filled)
         } else{
             btnFavorite.setImageResource(R.drawable.heart)
@@ -90,8 +90,9 @@ class MyListAdapter(private val context: Context, private val items: MutableList
         btnFavorite.setOnClickListener {
             val imageUrl = item.webformatURL
             val tag = item.tags
+            val id = item.id
             btnFavorite.setImageResource(R.drawable.heart_filled)
-            saveFavoriteImage(imageUrl, tag)
+            saveFavoriteImage(id, imageUrl, tag)
         }
 
         btnDownload.setOnClickListener {
@@ -100,10 +101,11 @@ class MyListAdapter(private val context: Context, private val items: MutableList
         return view
     }
 
-    private fun saveFavoriteImage(imageUrl : String, tag : String){
+    private fun saveFavoriteImage(id : Int, imageUrl : String, tag : String){
         val sqLiteManager = SQLiteManager(context)
         val db = sqLiteManager.writableDatabase
         val contentValues = ContentValues().apply {
+            put("ImageId", id)
             put("ImageUrl", imageUrl)
             put("Tag", tag)
             put("Favorite", 1)

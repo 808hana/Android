@@ -19,15 +19,16 @@ class DashboardViewModel(private val dbHelper : SQLiteManager) : ViewModel() {
     fun loadFavoriteImages() {
         viewModelScope.launch(Dispatchers.IO) {
             val db = dbHelper.readableDatabase
-            val cursor = db.query("favorites", arrayOf("ImageUrl", "Tag", "Favorite"), null, null, null, null, null)
+            val cursor = db.query("favorites", arrayOf("ImageId", "ImageUrl", "Tag", "Favorite"), null, null, null, null, null)
             val images = mutableListOf<ImageHit>()
 
             if (cursor.moveToFirst()) {
                 do {
+                    val id = cursor.getInt(cursor.getColumnIndexOrThrow("ImageId"))
                     val imageUrl = cursor.getString(cursor.getColumnIndexOrThrow("ImageUrl"))
                     val tag = cursor.getString(cursor.getColumnIndexOrThrow("Tag"))
                     val favorite = cursor.getInt(cursor.getColumnIndexOrThrow("Favorite"))
-                    val imageHit = ImageHit(imageUrl, tag, favorite)
+                    val imageHit = ImageHit(id, imageUrl, tag, favorite)
                     images.add(imageHit)
                 } while (cursor.moveToNext())
             }

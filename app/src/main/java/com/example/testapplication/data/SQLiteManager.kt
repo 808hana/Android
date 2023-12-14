@@ -13,13 +13,14 @@ import java.text.SimpleDateFormat
 class SQLiteManager(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
     companion object {
         private const val DATABASE_NAME = "ImageDB"
-        private const val DATABASE_VERSION = 3
+        private const val DATABASE_VERSION = 6
     }
 
     override fun onCreate(db: SQLiteDatabase?) {
         val createTableStatement = """
             CREATE TABLE favorites (
                 Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ImageId INT UNIQUE,
                 ImageUrl TEXT UNIQUE,
                 Tag TEXT,
                 Favorite INTEGER
