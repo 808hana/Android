@@ -13,6 +13,7 @@ import com.example.testapplication.data.ImageHit
 import com.example.testapplication.data.PixabayResponse
 import com.example.testapplication.api.api_interface
 import com.example.testapplication.data.AndroidDownloader
+import com.example.testapplication.data.SQLiteManager
 import com.example.testapplication.databinding.FragmentHomeBinding
 import retrofit2.Call
 import retrofit2.Callback
@@ -41,7 +42,9 @@ class HomeFragment : Fragment() {
         downloader = AndroidDownloader(requireContext())
         setupListView()
 
-        viewModel.searchImages("cat")
+        if(viewModel.images.value.isNullOrEmpty()) {
+            viewModel.searchImages("cat")
+        }
         return root
     }
 
@@ -49,7 +52,6 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         viewModel.images.observe(viewLifecycleOwner, Observer { newImageHits ->
-            // Update the adapter with the new data
             (binding.listViewHome.adapter as? MyListAdapter)?.updateData(newImageHits.toMutableList())
         })
 
@@ -57,7 +59,6 @@ class HomeFragment : Fragment() {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 query?.let {
                     if (it.isNotEmpty()) {
-                        //performSearch(it)
                         viewModel.searchImages(it)
                     }
                 }
@@ -71,12 +72,12 @@ class HomeFragment : Fragment() {
     }
 
     private fun setupListView() {
-        adapter = MyListAdapter(requireContext(), mutableListOf(), downloader)
+        val dbHelper = SQLiteManager(requireContext())
+        adapter = MyListAdapter(requireContext(), mutableListOf(), downloader, dbHelper)
         binding.listViewHome.adapter = adapter
     }
 
     private fun updateListView(imageHits: List<ImageHit>) {
-        // Update the adapter with new data
         adapter.updateData(imageHits)
     }
 
@@ -84,5 +85,4 @@ class HomeFragment : Fragment() {
         super.onDestroyView()
         _binding = null
     }
-
 }

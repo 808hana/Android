@@ -53,7 +53,8 @@ class DashboardFragment : Fragment() {
         })
     }
     private fun setupListView() {
-        adapter = MyListAdapter(requireContext(), mutableListOf(), downloader)
+        val dbHelper = SQLiteManager(requireContext())
+        adapter = MyListAdapter(requireContext(), mutableListOf(), downloader, dbHelper)
         binding.listViewFavorite.adapter = adapter
     }
 

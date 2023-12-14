@@ -20,7 +20,7 @@ class SQLiteManager(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME,
         val createTableStatement = """
             CREATE TABLE favorites (
                 Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                ImageUrl TEXT,
+                ImageUrl TEXT UNIQUE,
                 Tag TEXT,
                 Favorite INTEGER
             )
@@ -32,5 +32,4 @@ class SQLiteManager(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME,
         db?.execSQL("DROP TABLE IF EXISTS favorites")
         onCreate(db)
     }
-
 }

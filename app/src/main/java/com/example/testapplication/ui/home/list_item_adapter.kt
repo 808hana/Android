@@ -12,14 +12,61 @@ import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.compose.ui.graphics.Color
+import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.DrawableCompat
 import com.bumptech.glide.Glide
 import com.example.testapplication.R
 import com.example.testapplication.data.AndroidDownloader
 import com.example.testapplication.data.ImageHit
 import com.example.testapplication.data.SQLiteManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
-class MyListAdapter(private val context: Context, private val items: MutableList<ImageHit>, private val downloader: AndroidDownloader) : ArrayAdapter<ImageHit>(context, 0, items) {
+class MyListAdapter(private val context: Context, private val items: MutableList<ImageHit>, private val downloader: AndroidDownloader, private val dbHelper: SQLiteManager) : ArrayAdapter<ImageHit>(context, 0, items) {
+
+    private var favoriteStatusMap = mutableMapOf<String, Boolean>()
+    init {
+        fetchFavoriteStatuses()
+    }
+
+    private fun fetchFavoriteStatuses() {
+        val db = dbHelper.readableDatabase
+        val cursor = db.query("favorites", arrayOf("ImageUrl"), "Favorite = ?", arrayOf("1"), null, null, null)
+
+        val favoritesSet = HashSet<String>()
+        if (cursor.moveToFirst()) {
+            do {
+                val imageUrl = cursor.getString(cursor.getColumnIndexOrThrow("ImageUrl"))
+                favoritesSet.add(imageUrl)
+            } while (cursor.moveToNext())
+            cursor.close()
+        }
+        db.close()
+
+        favoriteStatusMap.clear()
+        items.forEach { imageHit ->
+            favoriteStatusMap[imageHit.webformatURL] = favoritesSet.contains(imageHit.webformatURL)
+        }
+    }
+
+    fun updateData(newItems : List<ImageHit>) {
+        clear()
+        addAll(newItems)
+        CoroutineScope(Dispatchers.IO).launch {
+            fetchFavoriteStatuses()
+            withContext(Dispatchers.Main) {
+                notifyDataSetChanged()
+            }
+        }
+    }
+
+    private fun isFavorite(imageUrl: String): Boolean {
+        return favoriteStatusMap[imageUrl] ?: false
+    }
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         val inflater = LayoutInflater.from(context)
@@ -33,21 +80,24 @@ class MyListAdapter(private val context: Context, private val items: MutableList
 
         Glide.with(context).load(item.webformatURL).error(R.drawable.error).into(imageView)
         textView.text = "Tags: ${item.tags}"
-        btnFavorite.setOnClickListener{
+
+        if(isFavorite(item.webformatURL)){
+            btnFavorite.setImageResource(R.drawable.heart_filled)
+        } else{
+            btnFavorite.setImageResource(R.drawable.heart)
+        }
+
+        btnFavorite.setOnClickListener {
             val imageUrl = item.webformatURL
             val tag = item.tags
+            btnFavorite.setImageResource(R.drawable.heart_filled)
             saveFavoriteImage(imageUrl, tag)
         }
+
         btnDownload.setOnClickListener {
             downloader.downloadFile(item.webformatURL)
         }
         return view
-    }
-
-    fun updateData(newItems: List<ImageHit>) {
-        clear()
-        addAll(newItems)
-        notifyDataSetChanged()
     }
 
     private fun saveFavoriteImage(imageUrl : String, tag : String){
