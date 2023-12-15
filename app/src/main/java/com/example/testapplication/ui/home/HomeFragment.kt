@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AbsListView
 import android.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -75,6 +76,26 @@ class HomeFragment : Fragment() {
         val dbHelper = SQLiteManager(requireContext())
         adapter = MyListAdapter(requireContext(), mutableListOf(), downloader, dbHelper)
         binding.listViewHome.adapter = adapter
+
+        binding.listViewHome.setOnScrollListener(object : AbsListView.OnScrollListener {
+            override fun onScrollStateChanged(view: AbsListView?, scrollState: Int) {
+            }
+
+            override fun onScroll(
+                view: AbsListView?,
+                firstVisibleItem: Int,
+                visibleItemCount: Int,
+                totalItemCount: Int
+            ) {
+                val lastItem = firstVisibleItem + visibleItemCount
+                if (lastItem == totalItemCount && totalItemCount > 0) {
+                    val isLoading = viewModel.isLoading.value ?: false
+                    if (!isLoading) {
+                        viewModel.loadMoreImages()
+                    }
+                }
+            }
+        })
     }
 
     private fun updateListView(imageHits: List<ImageHit>) {

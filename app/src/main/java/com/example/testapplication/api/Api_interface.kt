@@ -10,6 +10,7 @@ interface api_interface {
     fun searchImages(
         @Query("key") apiKey: String,
         @Query("q") query: String,
-        @Query("image_type") imageType: String
+        @Query("image_type") imageType: String,
+        @Query("page") page: Int
     ): Call<PixabayResponse>
 }

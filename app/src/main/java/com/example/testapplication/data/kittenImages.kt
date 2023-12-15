@@ -8,7 +8,6 @@ data class PixabayResponse(
 
 data class ImageHit(
     val id: Int,
-    //val pageURL: String,
     //val type: String,
     val webformatURL: String,
     val tags: String,

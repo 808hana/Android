@@ -17,24 +17,52 @@ class HomeViewModel : ViewModel() {
     private val _images = MutableLiveData<List<ImageHit>>()
     val images: LiveData<List<ImageHit>> = _images
 
+    private var currentPage = 1
+    private var currentQuery: String? = null
+
+    private val _isLoading = MutableLiveData<Boolean>(false)
+    val isLoading: LiveData<Boolean> = _isLoading
+
     private val retrofit = Retrofit.Builder()
         .baseUrl("https://pixabay.com/")
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
     fun searchImages(searchQuery: String) {
+        currentPage = 1
+        currentQuery = searchQuery
+        loadImages(searchQuery, currentPage)
+    }
+
+    fun loadMoreImages() {
+        if (_isLoading.value == true) {
+            return
+        }
+
+        currentQuery?.let {
+            _isLoading.value = true
+            currentPage++
+            loadImages(it, currentPage)
+        }
+    }
+
+
+    private fun loadImages(query: String, page: Int) {
         val apiService = retrofit.create(api_interface::class.java)
-        val call = apiService.searchImages("41183002-bf3427640d13d18680465e50d", searchQuery, "photo")
+        val call = apiService.searchImages("41183002-bf3427640d13d18680465e50d", query, "photo", page)
 
         call.enqueue(object : Callback<PixabayResponse> {
             override fun onResponse(call: Call<PixabayResponse>, response: Response<PixabayResponse>) {
                 if (response.isSuccessful) {
-                    _images.value = response.body()?.hits
+                    val currentImages = _images.value ?: listOf()
+                    val newImages = response.body()?.hits ?: listOf()
+                    _images.value = currentImages + newImages
                 }
+                _isLoading.value = false
             }
 
             override fun onFailure(call: Call<PixabayResponse>, t: Throwable) {
-                // Handle failure, e.g., post a value to a LiveData that the UI can observe to show an error message
+                _isLoading.value = false
             }
         })
     }
